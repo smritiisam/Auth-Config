@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Auth Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <nav class="navbar">
+        <div class="navbar-brand">
+          <h2>Dashboard</h2>
+        </div>
+        <div class="navbar-menu">
+          <span
+            id="userEmail"
+            class="user-email"
+            data-testid="user-email"
+          ></span>
+          <button
+            class="btn btn-secondary"
+            id="logoutBtn"
+            data-testid="logout-btn"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <main class="dashboard-main">
+        <div class="welcome-card" data-testid="welcome-card">
+          <h1>Welcome, <span id="userName" data-testid="user-name"></span>!</h1>
+          <p class="subtitle">
+            You have successfully logged into your dashboard
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" data-testid="stat-card-1">
+            <div class="stat-icon">📊</div>
+            <h3>Analytics</h3>
+            <p class="stat-value">Coming Soon</p>
+            <p class="stat-description">View your data analytics</p>
+          </div>
+
+          <div class="stat-card" data-testid="stat-card-2">
+            <div class="stat-icon">⚙️</div>
+            <h3>Settings</h3>
+            <p class="stat-value">Placeholder</p>
+            <p class="stat-description">Manage your preferences</p>
+          </div>
+
+          <div class="stat-card" data-testid="stat-card-3">
+            <div class="stat-icon">📈</div>
+            <h3>Reports</h3>
+            <p class="stat-value">0</p>
+            <p class="stat-description">Generate custom reports</p>
+          </div>
+
+          <div class="stat-card" data-testid="stat-card-4">
+            <div class="stat-icon">👥</div>
+            <h3>Team</h3>
+            <p class="stat-value">1 User</p>
+            <p class="stat-description">Manage team members</p>
+          </div>
+        </div>
+
+        <div class="info-section" data-testid="account-info">
+          <h2>Account Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Name:</span>
+              <span
+                class="info-value"
+                id="accountName"
+                data-testid="account-name"
+              ></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Email:</span>
+              <span
+                class="info-value"
+                id="accountEmail"
+                data-testid="account-email"
+              ></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Member Since:</span>
+              <span
+                class="info-value"
+                id="memberSince"
+                data-testid="member-since"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Check authentication on page load
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      if (!token) {
+        window.location.href = "/";
+      }
+
+      // Display user information
+      if (user.name) {
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("accountName").textContent = user.name;
+      }
+
+      if (user.email) {
+        document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("accountEmail").textContent = user.email;
+      }
+
+      // Fetch and display full user info
+      async function loadUserInfo() {
+        try {
+          const response = await fetch("/api/auth/me", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+              const createdDate = new Date(data.user.createdAt);
+              document.getElementById("memberSince").textContent =
+                createdDate.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                });
+            }
+          } else if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/";
+          }
+        } catch (error) {
+          console.error("Error loading user info:", error);
+        }
+      }
+
+      loadUserInfo();
+
+      // Logout functionality
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>
