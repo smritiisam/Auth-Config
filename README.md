@@ -52,6 +52,7 @@ A backend-heavy Node.js application with JWT authentication, environment validat
 │   │   └── app.js           # Utility functions
 │   ├── index.html           # Login page
 │   ├── register.html        # Registration page
+
 │   └── dashboard.html       # Dashboard (protected)
 │
 └── README.md
